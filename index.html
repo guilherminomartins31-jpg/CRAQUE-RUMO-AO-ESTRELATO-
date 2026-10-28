@@ -1,211 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Craque: Rumo ao Estrelato</title>
-<style>
-:root{--bg:#09130e;--card:#13251b;--ink:#eef5ef;--mut:#8fa797;--g:#2ecc71;--y:#f5d547;--bad:#ff6b6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
-#app{max-width:480px;margin:0 auto;padding:14px 14px 90px}
-h1{font-size:30px;margin:10px 0;color:var(--y);letter-spacing:-.5px}h2{font-size:19px;margin:6px 0 8px;color:var(--g)}
-.card{background:var(--card);border-radius:14px;padding:12px 14px;margin:10px 0;animation:in .25s}
-@keyframes in{from{opacity:0;transform:translateY(6px)}}
-.row{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin:5px 0}.mut{color:var(--mut);font-size:13px}
-.bar{height:7px;background:#0c1a13;border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g)}.bar.y i{background:var(--y)}
-button{display:block;width:100%;margin:7px 0;padding:13px;font-size:15px;font-weight:700;border:0;border-radius:12px;background:var(--g);color:#06120b;text-align:left}
-button.s{background:#1d3a2b;color:var(--ink)}button.y{background:var(--y)}button:disabled{opacity:.4}
-button small{display:block;font-weight:400;opacity:.75}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g2 button{margin:0;font-size:13px;padding:10px}
-input,select{width:100%;box-sizing:border-box;padding:11px;font-size:16px;border-radius:10px;border:1px solid #2b4a39;background:#0c1a13;color:var(--ink);margin:3px 0 8px}
-label{font-size:13px;color:var(--mut)}
-.big{font-size:44px;font-weight:900;text-align:center;color:var(--y)}.ok{color:var(--g);font-weight:700}.no{color:var(--bad);font-weight:700}
-.log{font-size:13px;color:var(--mut);margin:3px 0}
-.post{border-left:3px solid var(--g);padding-left:10px;margin:10px 0;font-size:14px}.post b{color:var(--y)}
-table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px 3px;text-align:center}td:nth-child(2),th:nth-child(2){text-align:left}tr.me td{color:var(--y);font-weight:700}
-#bar{position:fixed;left:0;right:0;bottom:0;display:none;background:#0d1d15;border-top:1px solid #1d3a2b;padding-bottom:env(safe-area-inset-bottom,0px)}
-#bar button{margin:0;border-radius:0;background:none;color:var(--mut);text-align:center;font-size:10px;padding:9px 0;font-weight:600}#bar button.on{color:var(--y)}
-@media (prefers-reduced-motion:reduce){.card{animation:none}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151c">
+  <meta name="description" content="Craque: Rumo ao Estrelato — construa sua carreira, tome decisões e chegue ao topo do futebol. Jogue a versão beta no navegador.">
+  <title>Craque: Rumo ao Estrelato — Beta</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="app"></div><div id="bar"></div>
-<script>
-const AT=["Velocidade","Finalização","Passe","Drible","Controle","Força","Marcação","Resistência","Visão","Cabeceio","Posicionamento","Compostura"];
-const POS={"Centroavante":{k:["Finalização","Cabeceio","Posicionamento","Força"],t:"a"},"Ponta":{k:["Velocidade","Drible","Finalização","Controle"],t:"a"},"Meia-atacante":{k:["Passe","Visão","Controle","Drible"],t:"m"},"Volante":{k:["Marcação","Passe","Resistência","Força"],t:"d"},"Zagueiro":{k:["Marcação","Força","Cabeceio","Posicionamento"],t:"d"}};
-const STY={"Veloz":{Velocidade:8,Resistência:4},"Driblador":{Drible:8,Controle:5},"Finalizador":{Finalização:8,Compostura:4},"Armador":{Passe:8,Visão:6},"Físico":{Força:8,Resistência:5},"Equilibrado":{}};
-const TIER=[{n:"Série C",b:44,c:["Várzea FC","Ferroviária do Sul","Atlético Cajueiro","Guarani do Vale","Operário Real","União Serrana"]},{n:"Série B",b:56,c:["Costa Azul","Leões da Serra","Sport Pampa","Nacional do Norte","Tupi Futebol","Porto Velho SC"]},{n:"Série A",b:68,c:["Real Metrópole","Estrela do Norte","Atlético Vila Nova","Paulistano Real","Cruzeiro do Sul","Fluvial FC"]}];
-const SELOPP=["Argentina","França","Alemanha","Espanha","Inglaterra","Uruguai"];
-const SIT={a:["Você recebe na entrada da área; um zagueiro vem em sua direção e um companheiro está livre pela direita.","Contra-ataque rápido: você, o goleiro e um zagueiro ao seu lado.","Cruzamento rasteiro: a bola sobra na marca do pênalti."],m:["Você domina no meio com espaço e vê o atacante partindo.","A bola sobra na entrada da área, pedindo chute ou passe."],d:["O atacante rival vem em velocidade pelo seu lado.","Cruzamento na área: você disputa com o centroavante.","Contra-ataque: o rival tem superioridade no meio."]};
-const CH={a:[["Chutar colocado",["Finalização","Compostura"],.42,"g"],["Chutar forte",["Finalização","Força"],.38,"g"],["Driblar o zagueiro",["Drible","Velocidade"],.5,"d"],["Passar ao companheiro livre",["Passe","Visão"],.55,"a"],["Cavar a falta",["Compostura","Controle"],.35,"f"]],
-m:[["Enfiar a bola",["Passe","Visão"],.42,"a"],["Chutar de fora",["Finalização","Compostura"],.3,"g"],["Driblar",["Drible","Controle"],.5,"d"],["Passe curto",["Passe","Controle"],.65,"p"],["Cavar a falta",["Compostura","Controle"],.35,"f"]],
-d:[["Desarme limpo",["Marcação","Posicionamento"],.55,"x"],["Carrinho",["Marcação","Força"],.5,"x"],["Antecipar o passe",["Posicionamento","Visão"],.5,"x"],["Sair jogando",["Passe","Controle"],.55,"a"],["Subir e cabecear",["Cabeceio","Força"],.22,"g"]]};
-const TONE={"Humilde":["Gratidão pelo apoio de vocês. Seguimos trabalhando! 🙏",8,0,"Torcedor: “Joga pra caramba e ainda é humilde!”"],"Confiante":["Foi só o começo. Bora pro próximo! 💪",15,0,"Companheiro: “Joga muito, irmão!”"],"Provocador":["Respeita o homem! Hoje a cidade é nossa! 🔥",40,1,"Rival: “Quero ver fazer isso no próximo jogo.”"],"Engraçado":["Meu agente disse que eu corro pouco. Mandei ele me alcançar. 😂",25,0,"Torcedor: “KKKK o cara é craque e ainda é palhaço”"],"Profissional":["Foco no descanso e na preparação para a próxima rodada.",5,0,"Jornalista: “Atleta com postura de veterano.”"]};
-const $=id=>document.getElementById(id),rnd=Math.random,cl=(v,a,b)=>Math.max(a,Math.min(b,v)),pick=a=>a[Math.floor(rnd()*a.length)],RS=n=>"R$ "+Math.round(n).toLocaleString("pt-BR"),F=n=>Math.round(n).toLocaleString("pt-BR");
-let S=null,M=null,tab="ini",scr=null;
-const key=()=>POS[S.pos].k,ovr=()=>Math.round(key().reduce((a,k)=>a+S.at[k],0)/4*.7+AT.reduce((a,k)=>a+S.at[k],0)/12*.3);
-const val=()=>Math.max(20000,Math.pow(Math.max(1,ovr()-38),2.2)*900+S.fame*10000-Math.max(0,S.age-29)*150000);
-const save=()=>{try{localStorage.setItem("craque_save",JSON.stringify(S))}catch(e){}};
-const hasSave=()=>{try{return !!localStorage.getItem("craque_save")}catch(e){return false}};
-function feed(who,t){S.feed.unshift({who,t,r:S.rd});S.feed=S.feed.slice(0,30)}
-function home(){S=null;scr=`<h1>Craque: Rumo ao Estrelato</h1><p class="mut">Da promessa desconhecida ao ídolo da Seleção.</p>
-<button onclick="newForm()">Nova carreira</button>${hasSave()?`<button class="s" onclick="loadG()">Continuar carreira</button>`:""}`;draw()}
-function loadG(){try{S=JSON.parse(localStorage.getItem("craque_save"));if(!S.lg)S.lg=Object.keys(S.tb);S.sps=S.sps||[];if(S.sp){S.sps.push(S.sp);S.sp=null}scr=null;tab="ini";draw()}catch(e){home()}}
-const opt=o=>Object.keys(o).map(k=>`<option>${k}</option>`).join("");
-function newForm(){scr=`<h2>Criar jogador</h2><div class="card">
-<label>Nome</label><input id="fn" value="Lucas" maxlength="14"><label>Sobrenome</label><input id="ln" value="Almeida" maxlength="14"><label>Apelido de campo</label><input id="nk" value="Lukinha" maxlength="12">
-<label>Idade</label><select id="ag">${[16,17,18,19,20,21].map(a=>`<option>${a}</option>`).join("")}</select>
-<label>Nacionalidade</label><select id="na"><option>Brasil</option><option>Outra</option></select>
-<label>Posição</label><select id="ps">${opt(POS)}</select><label>Pé dominante</label><select id="pe"><option>Direito</option><option>Esquerdo</option><option>Ambidestro</option></select>
-<label>Estilo de jogo</label><select id="sy">${opt(STY)}</select><label>Cabelo</label><select id="ha"><option>Curto</option><option>Black power</option><option>Raspado</option><option>Platinado</option></select>
-<label>Altura (cm)</label><input id="al" type="number" value="178"><label>Peso (kg)</label><input id="pw" type="number" value="70"><label>Camisa</label><input id="nu" type="number" value="10" min="1" max="99">
-<label>Como começar</label><select id="st"><option value="b">Categorias de base</option><option value="c">Clube pequeno</option><option value="p">Peneira</option></select></div>
-<button onclick="create()">Começar carreira</button><button class="s" onclick="home()">Voltar</button>`;draw()}
-function create(){const v=i=>$(i).value,p=v("ps"),age=+v("ag");const at={};AT.forEach(k=>at[k]=38+Math.floor(rnd()*5)-(age<18?2:0));POS[p].k.forEach(k=>at[k]+=14);const sb=STY[v("sy")];for(const k in sb)at[k]+=sb[k];if(v("pe")=="Ambidestro")at.Controle+=3;
-S={nm:v("fn")+" "+v("ln"),nick:v("nk")||v("fn"),age,nat:v("na"),pos:p,foot:v("pe"),sty:v("sy"),num:v("nu"),at,tier:0,club:TIER[0].c[0],sal:800,trust:35,morale:60,fame:1,fol:Math.round(200+rnd()*300),money:5000,en:100,xp:0,pot:0,rd:0,r:0,trained:false,posted:-1,inj:0,
-st:{j:0,t:0,g:0,a:0,y:0,r:0,rt:[],tit:0},ss:{j:0,g:0,a:0,r:0,rt:[]},sel:{j:0,g:0,left:0,called:false,first:false},riv:0,fines:0,sp:null,sps:[],offers:[],pend:null,feed:[],msg:""};
-S.pot=Math.min(95,ovr()+(22-age)*3+8);
-const m=v("st");let how="Você chega às categorias de base do ";
-if(m=="c"){S.sal=2500;S.trust=45;how="Você assina com o elenco profissional do "}
-if(m=="p"){if(rnd()<cl(ovr()/90,.3,.8)){S.sal=1500;S.trust=40;how="Você brilha na peneira e assina com o "}else how="Você não convence na peneira, mas é aproveitado na base do "}
-initSeason();feed("Imprensa",`${how}${S.club}. ${S.nick}, ${age} anos, começa a história.`);scr=null;tab="ini";save();draw()}
-function initSeason(){S.cs={};S.tb={};S.lg=TIER[S.tier].c.slice();if(!S.lg.includes(S.club))S.lg[Math.floor(rnd()*6)]=S.club;S.lg.forEach(c=>{S.cs[c]=TIER[S.tier].b+rnd()*10-5;S.tb[c]={p:0,w:0,d:0,l:0,gf:0,ga:0}});
-if(!S.cs[S.club]){S.club=TIER[S.tier].c[0]}S.fx=[];const o=S.lg.filter(c=>c!=S.club);S.fx=o.concat(o).sort(()=>rnd()-.5);S.r=0;S.trained=false;S.cup={stage:0,alive:true,due:false};S.ss={j:0,g:0,a:0,r:0,rt:[]}}
-function apply(a,b,ga,gb){const A=S.tb[a],B=S.tb[b];A.gf+=ga;A.ga+=gb;B.gf+=gb;B.ga+=ga;if(ga>gb){A.w++;B.l++}else if(ga<gb){B.w++;A.l++}else{A.d++;B.d++}}
-function simOther(a,b){const sa=S.cs[a],sb=S.cs[b];apply(a,b,Math.floor(rnd()*(2.6+(sa-sb)/25)),Math.floor(rnd()*(2.6+(sb-sa)/25)))}
-const pts=c=>c.w*3+c.d,tbl=()=>Object.keys(S.tb).sort((a,b)=>pts(S.tb[b])-pts(S.tb[a])||(S.tb[b].gf-S.tb[b].ga)-(S.tb[a].gf-S.tb[a].ga));
-const TABS={ini:tInicio,par:tPartidas,tre:tTreino,car:tCarreira,soc:tSocial,mer:tMercado,sel:tSelecao};
-const NAMES={ini:"🏠|Início",par:"⚽|Partidas",tre:"🏋️|Treino",car:"📊|Carreira",soc:"📱|BolaSocial",mer:"💼|Mercado",sel:"🇧🇷|Seleção"};
-function draw(){const b=$("bar");if(!S||scr){b.style.display="none";$("app").innerHTML=scr||"";window.scrollTo(0,0);return}
-b.style.display="flex";b.innerHTML=Object.keys(NAMES).map(k=>{const[i,n]=NAMES[k].split("|");return`<button class="${k==tab?"on":""}" style="flex:1" onclick="go('${k}')">${i}<br>${n}</button>`}).join("");
-const m=S.msg?`<div class="card" style="border:1px solid var(--y)">${S.msg}</div>`:"";S.msg="";$("app").innerHTML=m+TABS[tab]();window.scrollTo(0,0)}
-function go(t){tab=t;draw()}
-const bar=(l,v,c)=>`<div class="row"><span>${l}</span><b>${v}</b></div><div class="bar ${c||""}"><i style="width:${cl(v,0,100)}%"></i></div>`;
-const head=()=>`<div class="mut">${S.nick} · ${S.age} anos · ${S.pos} · ${S.club} (${TIER[S.tier].n})</div>`;
-function nextTxt(){return S.r<10?`Rodada ${S.r+1}/10 vs ${S.fx[S.r]}`:"Temporada encerrada"}
-function tInicio(){const f=S.feed.slice(0,3).map(x=>`<div class="post"><b>${x.who}</b><br>${x.t}</div>`).join("");
-return`${head()}<h2>Início</h2>${evCard()}<div class="card"><div class="row"><span>Próximo compromisso</span><b>${nextTxt()}</b></div>${S.inj>0?`<div class="no">Lesionado: ${S.inj} rodada(s) de afastamento</div>`:""}</div>
-<div class="card"><div class="g2"><div><span class="mut">Nota geral</span><div class="big" style="font-size:34px">${ovr()}</div></div><div><span class="mut">Potencial</span><div class="big" style="font-size:34px">${S.pot}</div></div></div>${bar("Energia",S.en)}${bar("Moral",Math.round(S.morale),"y")}${bar("Confiança do treinador",Math.round(S.trust),"y")}<div class="row"><span>Valor de mercado</span><b>${RS(val())}</b></div></div><h2>Últimas notícias</h2>${f}`}
-function tPartidas(){const t=tbl().map((c,i)=>{const x=S.tb[c];return`<tr class="${c==S.club?"me":""}"><td>${i+1}</td><td>${c}</td><td>${pts(x)}</td><td>${x.w+x.d+x.l}</td><td>${x.gf-x.ga}</td></tr>`}).join("");
-const bt=S.r>=10?`<button class="y" onclick="endSeason()">Encerrar temporada</button>`:`<button onclick="playRound()">${S.inj>0?"Rodada de recuperação (você está lesionado)":"Jogar partida"}<small>${nextTxt()}</small></button>`;
-const QS=["Quartas","Semifinal","Final"],cp=S.cup?`<div class="card"><b>Copa Nacional</b><div class="mut">${S.cup.alive?QS[S.cup.stage]:"Fase encerrada para você"}</div>${S.cup.due?`<button class="y" onclick="playCup()">Jogar a Copa: ${QS[S.cup.stage]}</button>`:""}</div>`:"";return`<h2>Partidas</h2>${cp}<div class="card">${bt}</div><div class="card"><table><tr><th>#</th><th>Clube</th><th>Pts</th><th>J</th><th>SG</th></tr>${t}</table></div>`}
-function tTreino(){const done=`<div class="mut">Sessões nesta rodada: ${S.trained|0}/3</div>`;
-return`<h2>Treino</h2><div class="card">${bar("Energia",S.en)}${done}<div class="mut">Até 3 sessões por rodada; cada treino gasta 12 de energia e rende de 1 a 5 pontos no atributo. Jogar cansado aumenta o risco de lesão.</div></div><div class="g2">${AT.map(k=>`<button class="s" onclick="train('${k}')">${k}<small>${S.at[k]}</small></button>`).join("")}</div><button class="y" onclick="rest()">Descansar<small>+35 de energia</small></button>`}
-function train(k){if((S.trained|0)>=3){S.msg="Limite de 3 sessões de treino nesta rodada.";return draw()}if(S.inj>0){S.msg="Lesionado: faça fisioterapia ou descanse.";return draw()}if(S.en<12){S.msg="Energia insuficiente. Descanse.";return draw()}
-S.trained=(S.trained|0)+1;S.en-=12;S.xp+=8;if(ovr()<S.pot+12){const g=Math.min(5,Math.max(1,Math.round((1+Math.floor(rnd()*5))*DG())));S.at[k]=Math.min(99,S.at[k]+g);S.msg=`${k} evoluiu +${g} (agora ${S.at[k]}).`}else S.msg="Treino concluído, sem ganho visível desta vez.";save();draw()}
-function rest(){if((S.trained|0)>=3){S.msg="Limite de 3 sessões nesta rodada.";return draw()}S.trained=(S.trained|0)+1;S.en=Math.min(100,S.en+35);S.morale=Math.min(100,S.morale+3);S.msg="Descanso feito: energia recuperada.";save();draw()}
-function tCarreira(){const a=S.st,avg=a.rt.length?(a.rt.reduce((x,y)=>x+y,0)/a.rt.length).toFixed(1):"-";
-const sp=spCard(),spOld=S.sp?`<div class="row"><span>Patrocínio: ${S.sp.n}</span><b>${RS(S.sp.v)}/rodada</b></div>`:S.fol>=3000?`<button class="y" onclick="takeSp()">Aceitar patrocínio da Chuteira Raio<small>${RS(1500)} por rodada. Perde se houver vermelho ou muitas multas.</small></button>`:`<div class="mut">Patrocinadores aparecem a partir de 3.000 seguidores.</div>`;
-return`<h2>Carreira</h2><div class="card"><div class="row"><span>Jogos</span><b>${a.j} (${a.t} titular)</b></div><div class="row"><span>Gols / Assistências</span><b>${a.g} / ${a.a}</b></div><div class="row"><span>Cartões</span><b>${a.y} amarelos, ${a.r} vermelhos</b></div><div class="row"><span>Nota média</span><b>${avg}</b></div><div class="row"><span>Títulos</span><b>${a.tit}</b></div><div class="row"><span>Pela Seleção</span><b>${S.sel.j} jogos, ${S.sel.g} gols</b></div></div>
-<div class="card"><div class="row"><span>Salário</span><b>${RS(S.sal)}/rodada</b></div><div class="row"><span>Dinheiro</span><b>${RS(S.money)}</b></div>${sp}<button class="s" onclick="fisio()">Fisioterapia (${RS(2000)})<small>+25 de energia; reduz o tempo de lesão</small></button></div>
-<div class="card"><b>Dificuldade: ${S.dif||"Normal"}</b><div class="g2">${["Fácil","Normal","Difícil"].map(d=>`<button class="s" onclick="setDif('${d}')">${d}</button>`).join("")}</div></div><div class="card"><b>Eventos fora de campo</b><div class="g2"><button class="s" onclick="setEv(.4)">Poucos</button><button class="s" onclick="setEv(.75)">Normais</button><button class="s" onclick="setEv(1)">Muitos</button></div></div><div class="card"><b>Relacionamentos</b>${rel()}</div><div class="card">${AT.map(k=>bar(k,S.at[k])).join("")}</div><button class="s" onclick="if(confirm('Apagar a carreira salva?')){try{localStorage.removeItem('craque_save')}catch(e){}home()}">Reiniciar carreira</button>`}
-function fisio(){if(S.money<2000){S.msg="Dinheiro insuficiente.";return draw()}S.money-=2000;S.en=Math.min(100,S.en+25);if(S.inj>0)S.inj--;S.msg="Sessão de fisioterapia concluída.";save();draw()}
-function takeSpOld(){S.sp={n:"Chuteira Raio",v:1500};feed("Imprensa",`${S.nick} fecha contrato com a Chuteira Raio.`);S.msg="Patrocínio fechado!";save();draw()}
-function tSocial(){const f=S.feed.map(x=>`<div class="post"><b>${x.who}</b><br>${x.t}</div>`).join("");const ok=S.posted!=S.rd;
-return`<h2>BolaSocial</h2><div class="card"><div class="row"><b>@${S.nick.toLowerCase().replace(/\s/g,"")}</b><span>#${S.num} · ${S.club}</span></div><div class="row"><span>Seguidores</span><b>${F(S.fol)}</b></div><div class="row"><span>Gols / Assist.</span><b>${S.st.g} / ${S.st.a}</b></div></div>
-<div class="card"><div class="mut">${ok?"Publique uma mensagem (uma por rodada):":"Você já publicou nesta rodada."}</div><div class="g2">${Object.keys(TONE).map(t=>`<button class="s" ${ok?"":"disabled"} onclick="post('${t}')">${t}</button>`).join("")}</div></div>${f}`}
-function post(t){const x=TONE[t];S.posted=S.rd;feed(S.nick,pick(POOL[t]));const rx=pick(RX[t]);feed(rx[0],rx[1]);S.fol+=Math.round(x[1]*(1+S.fame/10)*(S.morale>50?1.2:.9));feed(x[3].split(":")[0],x[3].split(": ")[1]);
-if(t=="Humilde"){S.trust=Math.min(100,S.trust+3)}if(t=="Provocador"){S.riv++;feed("Rival","Vai ter troco no próximo jogo, garoto.");if(rnd()<.3){S.fines++;S.money-=3000;S.trust-=4;feed("Imprensa",`Clube multa ${S.nick} em ${RS(3000)} por provocação nas redes.`)}}
-S.morale=Math.min(100,S.morale+2);save();draw()}
-function tMercado(){const o=S.offers.map((x,i)=>`<div class="card"><b>${x.club}</b> (${x.pais||TIER[x.tier].n})<div class="row"><span>Salário</span><b>${RS(x.sal)}/rodada</b></div><div class="row"><span>Contrato</span><b>3 anos</b></div><div class="row"><span>Papel esperado</span><b>${x.role}</b></div><div class="row"><span>Chance de titular</span><b>${x.ch}%</b></div><div class="mut">Meta: ${x.goal}</div><button onclick="offer(${i},'a')">Aceitar</button><button class="s" onclick="offer(${i},'n')">Negociar salário (+15%)</button><button class="s" onclick="offer(${i},'r')">Recusar</button></div>`).join("");
-return`<h2>Mercado</h2><div class="card"><div class="row"><span>Contrato atual</span><b>${S.club}</b></div><div class="row"><span>Salário</span><b>${RS(S.sal)}/rodada</b></div><div class="row"><span>Valor de mercado</span><b>${RS(val())}</b></div>${S.pend?`<div class="ok">Transferência acertada: ${S.pend.club} no próximo ano.</div>`:""}</div>${o||`<div class="card mut">Nenhuma proposta no momento. Bom desempenho e fama atraem clubes maiores (propostas saem nas rodadas 5 e 10).</div>`}`}
-function genOfferOld(){if(S.tier>=2||S.pend)return;const a=S.ss.rt.length?S.ss.rt.reduce((x,y)=>x+y,0)/S.ss.rt.length:0;if(a>=6.6&&ovr()>=[54,64][S.tier]&&S.offers.length<2){const t=S.tier+1,c=pick(TIER[t].c),ch=cl(Math.round(50+(ovr()-TIER[t].b)*4),15,90);S.offers.push({club:c,tier:t,sal:Math.round(S.sal*2.2),role:ch>65?"Titular":ch>40?"Rotação":"Reserva",ch,goal:t==2?"Disputar o título e vaga continental":"Briga por acesso"});feed("Imprensa",`${c} monitora ${S.nick} e prepara proposta.`)}}
-function offer(i,a){const x=S.offers[i];if(a=="r"){S.offers.splice(i,1);S.msg="Proposta recusada."}else if(a=="n"){if(rnd()<cl(.3+S.fame/40,.3,.7)){x.sal=Math.round(x.sal*1.15);S.msg="O empresário conseguiu um salário melhor!";x.neg=1}else{S.offers.splice(i,1);S.msg="Negociação falhou e o clube desistiu."}}
-else{S.pend=x;S.offers=[];feed("Imprensa",`URGENTE: ${S.nick} vai para o ${x.club} no próximo ano!`);S.msg="Proposta aceita! Você se apresenta na próxima temporada."}save();draw()}
-const SEL={ovr:72,j:8,c:8,rt:7};
-function metas(){const s=S.ss,att=POS[S.pos].t!="d",avg=s.rt.length?s.rt.reduce((x,y)=>x+y,0)/s.rt.length:0;return[[`Nota geral ${SEL.ovr}+`,ovr()>=SEL.ovr],[`${SEL.j}+ jogos na temporada`,s.j>=SEL.j],[att?`${SEL.c}+ gols ou assistências`:`Nota média ${SEL.rt}+`,att?s.g+s.a>=SEL.c:avg>=SEL.rt],["Sem expulsões",s.r==0],["Nacionalidade brasileira",S.nat=="Brasil"],["Liga Série B ou superior",S.tier>=1||ovr()>=78]]}
-function tSelecao(){const m=metas().map(x=>`<div class="row"><span>${x[0]}</span><b class="${x[1]?"ok":"no"}">${x[1]?"✓":"✗"}</b></div>`).join("");
-return`<h2>Seleção Brasileira</h2><div class="card"><div class="mut">Metas desta temporada (a convocação também depende de concorrência e sorte):</div>${m}</div><div class="card"><div class="row"><span>Jogos / Gols</span><b>${S.sel.j} / ${S.sel.g}</b></div>${S.sel.called?`<div class="ok">Você está convocado!</div>${S.sel.tour?`<button class="y" onclick="playTour()">${S.sel.tour.n}: ${["Grupos","Quartas","Semifinal","Final"][S.sel.tour.stage]}</button>`:""}<button onclick="playSel()" ${S.sel.left>0?"":"disabled"}>Jogar amistoso (${S.sel.left} restante)</button>`:`<div class="mut">Ainda não convocado.</div>`}</div>`}
-function playSel(){if(S.sel.left<=0)return;S.sel.left--;startMatch("sel",pick(SELOPP),70)}
-function playRound(){if(S.inj>0){S.inj--;S.en=Math.min(100,S.en+12);S.trained=false;advance(null);S.msg="Rodada em recuperação: você não jogou.";save();return draw()}
-startMatch("liga",S.fx[S.r],S.cs[S.fx[S.r]])}
-function advance(res){const opp=S.fx[S.r],o=S.lg.filter(c=>c!=S.club&&c!=opp).sort(()=>rnd()-.5);simOther(o[0],o[1]);simOther(o[2],o[3]);if(res)apply(S.club,opp,res[0],res[1]);else simOther(S.club,opp);S.r++;S.rd++;S.trained=0;S.en=Math.min(100,S.en+10);S.ev=rnd()<(S.evp||.75)?Math.floor(rnd()*EV.length):null;if(S.rel&&S.rel.capitao<30)S.morale=Math.max(0,S.morale-3);if(S.rel&&S.rel.treinador>=70)S.trust=Math.min(100,S.trust+2);S.money+=S.sal+(S.sps||[]).reduce((a,x)=>a+x.v,0)+(S.sp?S.sp.v:0);if(S.r==5||S.r==10)genOffer();if(S.cup&&S.cup.alive&&[3,6,9].includes(S.r))S.cup.due=true}
-function startMatch(kind,opp,os){const sel=kind=="sel"||kind=="tour",st=sel?(ovr()>=76||rnd()<.35):(S.trust>=40||rnd()<.25);
-M={kind,opp,os:os+DO()+(sel?0:S.riv&&rnd()<.3?3:0),my:sel?72:S.cs[S.club],min:0,i:0,sc:[0,0],g:0,a:0,ok:0,fail:0,yel:0,red:0,def:0,b:0,log:[],st,mins:(st?[12,30,48,66,82]:[66,74,82,88]).map(m=>m+Math.floor(rnd()*5))};
-if(sel)lg(0,"O Hino Nacional ecoa no estádio e a torcida canta junto.");if(!st)lg(0,"Você começa no banco e espera sua chance.");scr="";next()}
-const me=()=>M.kind=="sel"||M.kind=="tour"?"Brasil":S.club;
-function lg(m,t){M.log.push(`${m}’ ${t}`)}
-function seg(to){const d=M.my-M.os,pm=cl(.13+d/200,.04,.35),po=cl(.13-d/200-M.def*.06,.03,.35);M.def=0;if(rnd()<pm){M.sc[0]++;lg(to-3,`Gol do ${me()}! ${pick(["Chute de longe","Bola na área","Escanteio bem cobrado"])}.`)}if(rnd()<po){M.sc[1]++;lg(to-1,`Gol do ${M.opp}. O adversário aproveita a falha.`)}}
-const prob=c=>cl(c[2]+DF()+(c[1].reduce((s,k)=>s+S.at[k],0)/c[1].length-M.os)/110+(S.en-60)/250+M.b+(S.morale-50)/400,.08,.9);
-const lab=c=>{const p=prob(c);return p>.6?"chance alta":p>.4?"chance média":"chance baixa"};
-const board=()=>`<div class="card"><div class="mut">${{sel:"Amistoso",tour:"Torneio",copa:"Copa Nacional"}[M.kind]||"Liga"} · ${M.min}’</div><div class="big">${M.sc[0]} x ${M.sc[1]}</div><div class="row" style="justify-content:center"><span>${me()} · ${M.opp}</span></div><div class="mut" style="text-align:center">Energia ${S.en} · Moral ${Math.round(S.morale)}</div></div>`;
-function next(){if(M.i>=M.mins.length||M.red)return fim();const m=M.mins[M.i];seg(m);M.min=m;const t=POS[S.pos].t;
-scr=`${board()}<h2>Lance ${M.i+1} de ${M.mins.length}</h2><div class="card">${pick(SIT[t])}</div>${CH[t].map((c,i)=>`<button class="s" onclick="act(${i})">${c[0]}<small>${lab(c)}</small></button>`).join("")}`;draw()}
-function act(i){const t=POS[S.pos].t,c=CH[t][i],w=rnd()<prob(c),y=c[3];let x="";M.b=0;
-if(y=="g"){if(w){M.g++;M.sc[0]++;M.ok++;x=pick(["GOOOL! Você balança a rede!","Gol! Bola no canto, sem chance para o goleiro!"])}else{M.fail++;x=pick(["O goleiro faz grande defesa.","A bola explode na trave!","Pra fora, raspando o gol."])}}
-else if(y=="a"){if(w){M.a++;M.sc[0]++;M.ok++;x="Passe perfeito! Seu companheiro não perdoa e marca."}else{M.fail++;x="O passe é interceptado."}}
-else if(y=="p"){if(w){M.ok++;M.b=.1;x="Passe certo: o time mantém a posse e ganha espaço."}else{M.fail++;x="Passe errado, a bola é do rival."}}
-else if(y=="d"){if(w){M.ok++;M.b=.15;x="Você passa pelo marcador e ganha espaço!"}else{M.fail++;x="Você perde a bola no drible."}}
-else if(y=="x"){if(w){M.ok++;M.def=1;x=pick(["Desarme perfeito, você recupera a bola.","Você antecipa e corta a jogada."])}else{M.fail++;if(rnd()<.35){M.sc[1]++;x="Você falha e o rival marca!"}else x="Você chega atrasado, mas o goleiro salva."}if(c[0]=="Carrinho"&&rnd()<.25){M.yel++;x+=" O árbitro mostra o cartão amarelo."}}
-else{if(w){if(rnd()<cl(.7+(S.at.Finalização+S.at.Compostura-110)/300,.5,.9)){M.g++;M.sc[0]++;M.ok++;x="Pênalti marcado! Você cobra e converte!"}else{M.fail++;x="Pênalti! Você cobra… e o goleiro defende."}}else{M.fail++;if(rnd()<.5){M.yel++;x="O árbitro entende como simulação: cartão amarelo!"}else x="O árbitro manda seguir."}}
-if(M.yel>=2&&!M.red){M.red=1;x+=" Segundo amarelo: você está expulso!"}
-lg(M.mins[M.i],`${c[0]}: ${x}`);M.i++;scr=`${board()}<div class="card"><span class="${w?"ok":"no"}">${x}</span></div><button onclick="next()">Continuar</button>`;draw()}
-function fim(){seg(90);const[a,b]=M.sc,w=a>b,d=a==b,rt=cl(+(6+M.g+M.a*.7+M.ok*.25-M.fail*.2-M.red*1.5+(w?.3:d?0:-.2)+(rnd()-.5)*.8).toFixed(1),3,10),res=w?"Vitória":d?"Empate":"Derrota";
-const sel=M.kind=="sel"||M.kind=="tour";let inj="";
-S.st.j++;if(M.st)S.st.t++;S.st.g+=M.g;S.st.a+=M.a;S.st.y+=M.yel;S.st.r+=M.red;S.st.rt.push(rt);
-if(sel){S.sel.j++;S.sel.g+=M.g;if(M.g>0&&!S.sel.first){S.sel.first=true;feed("Imprensa",`URGENTE: ${S.nick} marca o primeiro gol pela Seleção Brasileira! 🇧🇷`)}}
-else{S.ss.j++;S.ss.g+=M.g;S.ss.a+=M.a;S.ss.r+=M.red;S.ss.rt.push(rt)}
-S.xp+=Math.round(rt*3+M.g*3);while(S.xp>=40){S.xp-=40;if(ovr()<S.pot)S.at[pick(key())]+=1}
-S.trust=cl(S.trust+(rt-6.5)*5,0,100);S.morale=cl(S.morale+(rt-6.5)*4+(w?4:-2),0,100);S.fame+=Math.max(0,(rt-6)*1.2+M.g*2);S.fol+=Math.max(0,Math.round((rt-5.5)*40*(1+S.fame/20)+M.g*150));
-S.en=cl(S.en-(M.st?18:8),0,100);S.money+=M.g*500;
-if(S.sps&&S.sps.length&&(M.red||S.fines>=3)){const lost=S.sps.pop();feed("Imprensa",`${lost.n} rescinde o patrocínio de ${S.nick} por mau comportamento.`);S.fines=0}
-if(S.en<35&&rnd()<.15){S.inj=1+Math.floor(rnd()*3);inj=`<div class="no">Você se lesionou: ${S.inj} rodada(s) fora.</div>`;feed("Imprensa",`${S.nick} sofre lesão e desfalca o ${me()}.`)}
-const sc=`${a} x ${b}`;const HL=w?[`${me()} vence o ${M.opp} por ${sc}.`,`Vitória por ${sc}: ${me()} supera o ${M.opp}.`,`${M.opp} cai diante do ${me()} (${sc}).`]:d?[`${me()} e ${M.opp} ficam no ${sc}.`,`Empate em ${sc} entre ${me()} e ${M.opp}.`,`Pontos divididos: ${sc} contra o ${M.opp}.`]:[`${me()} perde para o ${M.opp} por ${sc}.`,`Derrota por ${sc}: o ${M.opp} leva a melhor.`,`${M.opp} supera o ${me()} (${sc}) e aumenta a pressão.`];const DT=M.g?pick([`${S.nick} marcou ${M.g} gol(s)`,`O camisa ${S.num} balançou a rede ${M.g}x`,`${S.nick} foi às redes ${M.g}x`]):M.a?pick([`${S.nick} deu ${M.a} assistência(s)`,`${S.nick} serviu os companheiros ${M.a}x`]):pick([`${S.nick} teve atuação discreta`,`${S.nick} lutou, mas a bola não sorriu`,`${S.nick} foi pouco acionado`]);feed(pick(["Imprensa","Esporte Total","Rádio Gol"]),pick(HL)+" "+DT+`, nota ${rt.toFixed(1)}.`);if(rt>=7)feed("Companheiro",pick(["Bora, craque! Hoje você carregou o time.","Joga muito, irmão!","Sensacional, parceiro. Pode contar comigo."]));
-if(M.g>=2)feed("Imprensa",pick([`URGENTE: ${S.nick} brilha com ${M.g} gols e é o nome da partida!`,`${S.nick} faz ${M.g} e decide: o craque da rodada!`,`Show do camisa ${S.num}: ${M.g} gols de ${S.nick}!`]));
-feed("Torcedor",pick(rt>=8?["É CRAQUE DEMAIS!","Esse menino vai longe, que jogo!",`${S.nick} é o dono do time!`,"Joga muito, joga muito mesmo!"]:rt<5.5?[`${S.nick} sumiu hoje…`,"Hoje não foi o dia dele.","Precisa melhorar, mas ainda confio.",`Cadê o ${S.nick} que a gente conhece?`]:[`Jogo decente do ${S.nick}.`,"Cumpriu o papel, sem brilhar.",`${S.nick} correu bastante hoje.`]));
-if(M.red)feed("Torcedor",pick([`${S.nick} expulso! Fez falta ao time.`,"Cabeça quente custou caro hoje.","Expulsão boba, deixou o time na mão."]));
-if(S.riv&&M.g>0)feed("Rival",pick(["Tá bom, você jogou bem hoje.","Hoje foi seu dia. Aproveita.","Não vai ser sempre assim, garoto."]));
-if(M.kind=="copa"||M.kind=="tour"){let adv=w;if(d){adv=rnd()<.5;feed("Imprensa",`Nos pênaltis, ${adv?"o time avança":"o time é eliminado"}.`)}M.kind=="copa"?copaRes(adv):tourRes(adv);S.trained=false}else if(sel)S.trained=false;else advance([a,b]);
-save();M.rt=rt;
-scr=`<h2>${res}</h2><div class="big">${sc}</div><div class="card"><div class="row"><span>Nota</span><b>${rt.toFixed(1)}</b></div><div class="row"><span>Gols / Assistências</span><b>${M.g} / ${M.a}</b></div><div class="row"><span>Lances certos</span><b>${M.ok}/${M.ok+M.fail}</b></div><div class="row"><span>Cartões</span><b>${M.yel} amarelo(s)${M.red?", 1 vermelho":""}</b></div><div class="row"><span>Confiança do treinador</span><b>${Math.round(S.trust)}</b></div>${inj}</div><div class="card">${M.log.slice(-8).map(l=>`<div class="log">${l}</div>`).join("")}</div><button onclick="interview()">Coletiva de imprensa<small>Responda aos jornalistas</small></button><button class="s" onclick="scr=null;tab='soc';draw()">Ver reação na BolaSocial</button><button class="s" onclick="scr=null;tab='par';draw()">Voltar</button>`;draw()}
-function endSeason(){const t=tbl(),pos=t.indexOf(S.club)+1,champ=pos==1,mt=metas(),okAll=mt.every(x=>x[1]),sum=[];
-if(champ){S.st.tit++;S.money+=20000;feed("Imprensa",`${S.club} é campeão da ${TIER[S.tier].n} com ${S.nick} no elenco!`);sum.push("🏆 Título conquistado! Bônus de "+RS(20000))}
-if(champ&&S.tier<2&&!S.pend){S.tier++;S.sal=Math.round(S.sal*1.3);feed("Imprensa",`${S.club} é promovido à ${TIER[S.tier].n}!`);sum.push("⬆️ "+S.club+" sobe para a "+TIER[S.tier].n+"! Seu salário foi reajustado.")}
-sum.push(`Posição final: ${pos}º lugar.`);
-if(okAll&&!S.sel.called&&rnd()<cl((ovr()-70)*.1+.4,.3,.9)){S.sel.called=true;S.sel.left=2;feed("Imprensa",`URGENTE — PRIMEIRA CONVOCAÇÃO! 🇧🇷 Após uma temporada impressionante, ${S.nick} é convocado pela primeira vez para a Seleção Brasileira!`);feed("Família","Estamos chorando de orgulho, meu filho! 🇧🇷");feed("Torcedor","O CRAQUE VAI PRA SELEÇÃO!");S.fol+=3000;S.fame+=8;sum.push("🇧🇷 Convocado para a Seleção Brasileira!")}
-else if(S.sel.called){S.sel.left=2;sum.push("Nova data FIFA: dois amistosos na Seleção.")}
-if(S.sel.called){S.sel.n=(S.sel.n||0)+1;if(S.sel.n%2==0){S.sel.tour={n:S.sel.n%4==0?"Copa do Mundo":"Torneio Continental",stage:0};sum.push("🏆 Você foi convocado para a "+S.sel.tour.n+"!")}}
-if(S.pend){const p=S.pend;S.tier=p.tier;S.club=p.club;S.sal=p.sal;S.trust=p.ch>65?55:35;S.pend=null;sum.push(`Transferência concluída: você agora joga no ${p.club}.`)}
-S.fines=0;S.age++;if(S.age<28)AT.forEach(k=>{if(ovr()<S.pot)S.at[k]=Math.min(99,S.at[k]+(rnd()<.6?1:0))});else if(S.age>31)AT.forEach(k=>{if(["Velocidade","Resistência","Força"].includes(k))S.at[k]-=1});
-S.pot=Math.max(S.pot,ovr());S.offers=[];S.rd++;S.en=100;S.inj=0;initSeason();save();
-scr=`<h1>Fim da temporada</h1><div class="card">${sum.map(s=>`<p>${s}</p>`).join("")}<div class="row"><span>Nova idade</span><b>${S.age} anos</b></div><div class="row"><span>Nota geral</span><b>${ovr()}</b></div></div><button onclick="scr=null;tab='ini';draw()">Próxima temporada</button>`;draw()}
-function playCup(){if(S.inj>0){S.msg="Lesionado: o time joga a Copa sem você.";return copaRes(rnd()<.5),draw()}const st=S.cup.stage,t=Math.min(2,S.tier+(st>0?1:0)),o=pick(TIER[t].c.filter(c=>c!=S.club));startMatch("copa",o,TIER[t].b+rnd()*8+st*2)}
-function copaRes(adv){S.cup.due=false;if(adv){S.cup.stage++;if(S.cup.stage>=3){S.cup.alive=false;S.st.tit++;S.money+=15000;S.fame+=6;S.fol+=1500;feed("Imprensa",`${S.club} é campeão da Copa Nacional! ${S.nick} é peça importante da conquista. 🏆`)}else feed("Imprensa",`${S.club} avança na Copa Nacional.`)}else{S.cup.alive=false;feed("Imprensa",`${S.club} é eliminado da Copa Nacional.`)}save()}
-function playTour(){const T=S.sel.tour;if(S.inj>0){S.msg="Lesionado: você desfalca a Seleção.";return tourRes(rnd()<.5),draw()}startMatch("tour",pick(SELOPP),68+T.stage*3)}
-function tourRes(adv){const T=S.sel.tour;if(adv){T.stage++;if(T.stage>=4){S.st.tit++;S.fame+=15;S.fol+=20000;S.money+=50000;feed("Imprensa",`URGENTE: BRASIL CAMPEÃO! ${S.nick} levanta a taça da ${T.n}! 🏆🇧🇷`);S.sel.tour=null}else feed("Imprensa",`A Seleção avança na ${T.n}.`)}else{feed("Imprensa",`A Seleção é eliminada da ${T.n}.`);S.sel.tour=null}save()}
-function interview(){const w=M.sc[0]>M.sc[1],q=w?pick(["Qual foi o segredo da vitória hoje?","Como foi decidir o jogo no campo?","O vestiário deve estar em festa. O que mudou?"]):M.sc[0]<M.sc[1]?pick(["A torcida está cobrando. O que faltou?","Como você explica a derrota?","O time errou onde hoje?"]):pick(["Um empate que deixou gosto de pouco?","Ficou faltando um gol, não é?","Dá para dizer que o ponto foi justo?"]);scr=`<h2>Coletiva de imprensa</h2><div class="card"><b>Jornalista:</b> ${q}</div><button class="s" onclick="ans(0)">Elogiar o grupo<small>Humilde</small></button><button class="s" onclick="ans(1)">Assumir a responsabilidade<small>Confiante</small></button><button class="s" onclick="ans(2)">Provocar o rival<small>Polêmico</small></button>`;draw()}
-function ans(i){let t;if(i==0){S.trust=Math.min(100,S.trust+3);S.morale=Math.min(100,S.morale+2);S.fol+=30;t=pick([`${S.nick} elogia o elenco: “O grupo é fortíssimo.”`,`${S.nick} dedica o resultado aos companheiros: “Ninguém ganha sozinho.”`,`${S.nick} agradece a comissão técnica: “Todo mundo se entregou.”`])}else if(i==1){S.morale=Math.min(100,S.morale+3);S.fame+=.5;S.fol+=60;t=pick([`${S.nick} assume a responsabilidade após o jogo contra o ${M.opp}.`,`${S.nick} diz que quer mais: “Posso render muito mais.”`,`“Eu estou aqui para decidir”, afirma ${S.nick}.`])}else{S.riv++;S.fol+=200;t=pick([`${S.nick} provoca o ${M.opp} na coletiva: “Respeitem o nosso time.”`,`“Eles falam muito e jogam pouco”, dispara ${S.nick} sobre o ${M.opp}.`,`${S.nick} manda recado ao ${M.opp}: “Quem avisa amigo é.”`]);if(rnd()<.3){S.fines++;S.money-=3000;S.trust=Math.max(0,S.trust-5);t+=" O clube multa o jogador em "+RS(3000)+"."}}feed("Imprensa",t);if(i==2)feed("Rival",`Vamos responder dentro de campo, ${S.nick}.`);save();scr=null;tab="soc";draw()}
-const POOL={"Humilde":["Gratidão pelo apoio de vocês. Seguimos trabalhando! 🙏","Só Deus e o grupo sabem o quanto a gente se dedica. Obrigado, torcida!","Ainda tenho muito a aprender. Obrigado a todos que acreditam. 🙌","Cada jogo é uma lição. Humildade e trabalho sempre."],"Confiante":["Foi só o começo. Bora pro próximo! 💪","Estou pronto para o que vier. Confiança total no nosso time.","Trabalho duro e cabeça erguida. O melhor ainda está por vir! 🚀","Acredito no meu futebol. Vamos juntos!"],"Provocador":["Respeita o homem! Hoje a cidade é nossa! 🔥","Falaram demais... a bola respondeu. 😏","Quem duvidou, já pode aplaudir. 👏","Pode mandar o próximo adversário, estou esperando."],"Engraçado":["Meu agente disse que eu corro pouco. Mandei ele me alcançar. 😂","Se gol fosse prova de matemática, eu estaria reprovado. Mas hoje passei! 😅","Fui buscar a bola na rede de novo. Já virou hobby. 😎","Minha mãe disse que eu jogo bem. Ela é suspeita, né? 😂"],"Profissional":["Foco no descanso e na preparação para a próxima rodada.","Análise do jogo feita. Agora é recuperar e evoluir.","Treino, descanso e disciplina: a rotina que importa.","Obrigado pelo apoio. Vamos ajustar os detalhes para o próximo jogo."]};
-const RX={"Humilde":[["Torcedor","Que menino educado e talentoso!"],["Jornalista","Poucos jovens têm essa maturidade."],["Companheiro","Orgulho de jogar contigo, irmão."]],"Confiante":[["Torcedor","Confiança de craque! 👏"],["Rival","Veremos se aguenta a pressão."],["Jornalista","O jovem começa a chamar atenção."]],"Provocador":[["Torcedor","KKKK pegou pesado!"],["Rival","Falou, falou... quero ver no clássico."],["Jornalista","Provocação pode custar caro ao jovem."]],"Engraçado":[["Torcedor","Esse é o nosso palhaço craque 😂"],["Companheiro","Parou de zoar, né? KKK"],["Jornalista","Bom humor e bom futebol rendem seguidores."]],"Profissional":[["Jornalista","Postura de veterano."],["Torcedor","Foco total, assim que se faz."],["Companheiro","Bora descansar, que tem jogo."]]};
-const EV=[{q:"Amigos chamam você para uma festa na véspera do jogo.",o:[["Ir à festa",{e:-25,m:8,l:150,r:{capitao:3},x:"Você se diverte, mas acorda cansado. A foto vazou na BolaSocial."}],["Ficar descansando",{e:15,m:-1,t:2,x:"Você recupera as energias e o treinador nota seu profissionalismo."}]]},
-{q:"O empresário traz uma proposta de publicidade de uma marca de energético.",o:[["Aceitar o contrato",{$:8000,l:200,r:{empresario:5},x:"Dinheiro no bolso e mais visibilidade."}],["Recusar",{m:2,t:2,r:{empresario:-3},x:"Você prefere focar no futebol e o clube aprecia."}]]},
-{q:"Um jornalista publica uma crítica dura sobre sua atuação.",o:[["Ignorar",{m:-2,t:1,x:"Você segue focado e a polêmica esfria."}],["Responder nas redes",{l:250,t:-4,riv:1,x:"Você rebate e a discussão viraliza, mas o treinador não gostou."}]]},
-{q:"O capitão chama você para uma conversa sobre o vestiário.",o:[["Ouvir e ajudar",{m:3,t:3,r:{capitao:8},x:"O capitão passa a confiar mais em você."}],["Discordar abertamente",{m:-2,t:-3,r:{capitao:-8},x:"O clima fica pesado no vestiário."}]]},
-{q:"O projeto social do clube convida você para visitar crianças de uma escola.",o:[["Participar",{m:6,f:1.5,l:300,x:"A visita emociona a torcida e rende reportagens."}],["Recusar",{x:"Você prefere não se envolver desta vez."}]]},
-{q:"O preparador oferece um plano de alimentação e sono (R$ 2.000).",o:[["Seguir o plano",{$:-2000,e:30,m:2,x:"Você acorda mais disposto."}],["Dispensar",{x:"Você mantém a rotina de sempre."}]]},
-{q:"Um rival desafia você publicamente para o próximo jogo.",o:[["Aceitar o desafio",{l:200,riv:1,m:4,x:"A rivalidade esquenta e a torcida fica ansiosa."}],["Ignorar",{m:1,x:"Você segue concentrado e silencioso."}]]},
-{q:"Sua família quer passar o fim de semana com você.",o:[["Passar o fim de semana",{m:8,e:12,r:{familia:6},x:"Você volta renovado."}],["Treinar extra",{e:-10,t:2,m:-2,r:{familia:-5},x:"Você mostra dedicação, mas a saudade pesa."}]]},
-{q:"Um carro esportivo está à venda por R$ 15.000.",o:[["Comprar",{$:-15000,f:1,l:100,m:5,x:"Você curte o carro novo e posta nas redes."}],["Economizar",{m:1,x:"Você guarda o dinheiro."}]]},
-{q:"O treinador pede para você ficar após o treino e ajustar o posicionamento.",o:[["Ficar",{e:-10,t:3,r:{treinador:6},at:1,x:"O trabalho extra melhora seu posicionamento."}],["Ir embora",{t:-2,r:{treinador:-5},x:"O treinador percebe a falta de interesse."}]]}];
-const rel=()=>{const r=S.rel||{treinador:50,empresario:50,capitao:50,familia:70};return Object.keys(r).map(k=>bar(k[0].toUpperCase()+k.slice(1),r[k],"y")).join("")};
-function evCard(){if(S.ev==null||!EV[S.ev])return"";const e=EV[S.ev];return`<div class="card" style="border:1px solid var(--y)"><b>Fora de campo</b><p>${e.q}</p>${e.o.map((o,i)=>`<button class="s" onclick="evPick(${i})">${o[0]}</button>`).join("")}</div>`}
-function evPick(i){const e=EV[S.ev],f=e.o[i][1];S.rel=S.rel||{treinador:50,empresario:50,capitao:50,familia:70};if((f.$||0)<0&&S.money<-f.$){S.msg="Dinheiro insuficiente para essa escolha.";return draw()}
-S.en=cl(S.en+(f.e||0),0,100);S.morale=cl(S.morale+(f.m||0),0,100);S.trust=cl(S.trust+(f.t||0),0,100);S.fame+=f.f||0;S.fol+=f.l||0;S.money+=f.$||0;S.riv+=f.riv||0;for(const k in(f.r||{}))S.rel[k]=cl(S.rel[k]+f.r[k],0,100);if(f.at&&ovr()<S.pot)S.at.Posicionamento+=1;
-if((f.l||0)>=200)feed("Imprensa",`${S.nick} movimenta as redes: ${f.x}`);S.msg=f.x;S.ev=null;save();draw()}
-function genOffer1(){if(S.pend)return;const a=S.ss.rt.length?S.ss.rt.reduce((x,y)=>x+y,0)/S.ss.rt.length:6,tg=3+(a>=7?1:0)+(S.fame>25?1:0)+(S.rel&&S.rel.empresario>=70?1:0),n=S.r==5?2:tg;
-while(S.offers.length<Math.min(n,tg)){const t=pick([S.tier,Math.min(2,S.tier+1),Math.min(2,S.tier+1)]),pool=TIER[t].c.filter(c=>c!=S.club&&!S.offers.some(o=>o.club==c));if(!pool.length)break;const c=pick(pool),ch=cl(Math.round(50+(ovr()-TIER[t].b)*4),15,90);S.offers.push({club:c,tier:t,sal:Math.round(S.sal*(t>S.tier?2.2:1.4)),role:ch>65?"Titular":ch>40?"Rotação":"Reserva",ch,goal:t==2?"Disputar o título e vaga continental":t==1?"Briga por acesso":"Subir de divisão"});feed("Imprensa",pick([`${c} monitora ${S.nick} e prepara proposta.`,`${c} faz sondagem por ${S.nick}.`,`Olheiros do ${c} acompanharam ${S.nick} de perto.`]))}}
-const SPN=[{n:"Chuteira Raio",v:1500,f:3000},{n:"Mizano",v:2000,f:4000},{n:"Pumba",v:2500,f:5000},{n:"Energético Foguete",v:2800,f:6000},{n:"Relógios Tempo Extra",v:3000,f:10000},{n:"Naike",v:3500,f:8000},{n:"Abidas",v:3500,f:8000},{n:"Banco Meia-Lua",v:4500,f:12000},{n:"Coka Gol",v:6000,f:25000}];
-function spCard(){S.sps=S.sps||[];if(S.sp){S.sps.push(S.sp);S.sp=null}const have=S.sps.map(x=>`<div class="row"><span>${x.n}</span><b>${RS(x.v)}/rodada</b></div>`).join(""),av=SPN.filter(x=>S.fol>=x.f&&!S.sps.some(y=>y.n==x.n)),btn=S.sps.length>=3?`<div class="mut">Limite de 3 patrocínios ativos.</div>`:av.map(x=>`<button class="y" onclick="takeSp('${x.n}')">Fechar com ${x.n}<small>${RS(x.v)} por rodada</small></button>`).join("");return have+btn+(av.length||S.sps.length?"":`<div class="mut">Patrocinadores aparecem a partir de 3.000 seguidores.</div>`)+`<div class="mut">Expulsão ou muitas multas podem fazer você perder um patrocínio.</div>`}
-function takeSp(n){S.sps=S.sps||[];const b=SPN.find(x=>x.n==n);if(!b||S.sps.length>=3||S.sps.some(y=>y.n==n))return;S.sps.push({n:b.n,v:b.v});S.fines=0;feed("Imprensa",pick([`${S.nick} fecha contrato com a marca ${b.n}.`,`${b.n} anuncia ${S.nick} como novo garoto-propaganda.`]));S.msg="Patrocínio fechado!";save();draw()}
-const DF=()=>({"Fácil":.06,"Normal":0,"Difícil":-.06})[S.dif||"Normal"],DG=()=>({"Fácil":1.3,"Normal":1,"Difícil":.7})[S.dif||"Normal"],DO=()=>({"Fácil":-4,"Normal":0,"Difícil":4})[S.dif||"Normal"];
-function setDif(d){S.dif=d;S.msg="Dificuldade: "+d;save();draw()}
-function setEv(p){S.evp=p;S.msg="Frequência de eventos atualizada.";save();draw()}
-const INTL=[["Manchester Royal","Inglaterra"],["Real Castela","Espanha"],["Bayern Alpen","Alemanha"],["Torino Bianco","Itália"],["Paris Lumière","França"],["Lisboa Atlântico","Portugal"],["Boca Rio da Prata","Argentina"],["Desert Stars","Arábia Saudita"],["Tokyo Sakura","Japão"],["Chicago Lakes","EUA"],["Azteca City","México"],["Amsterdam Oranje","Países Baixos"]];
-TIER.push({n:"Liga Internacional",b:80,c:INTL.slice(0,6).map(x=>x[0])});
-function genOffer(){if(S.pend)return;if(S.tier<3)genOffer1();const a=S.ss.rt.length?S.ss.rt.reduce((x,y)=>x+y,0)/S.ss.rt.length:6;
-if(S.tier>=1&&S.offers.filter(o=>o.tier==3).length<2){let k=rnd()<cl((a-6.4)*.45+S.fame/90,.1,.9)?1:0;if(a>=7.5&&rnd()<.5)k++;
-for(let i=0;i<k;i++){const pool=INTL.filter(x=>x[0]!=S.club&&!S.offers.some(o=>o.club==x[0]));if(!pool.length)break;const x=pick(pool),ch=cl(Math.round(45+(ovr()-80)*4+a*3),10,90);S.offers.push({club:x[0],pais:x[1]+" · Liga Internacional",tier:3,sal:Math.round(S.sal*3),role:ch>65?"Titular":ch>40?"Rotação":"Reserva",ch,goal:"Disputar títulos e competições internacionais"});feed("Imprensa",pick([`${x[0]} (${x[1]}) faz sondagem por ${S.nick}.`,`A imprensa de ${x[1]} aponta ${S.nick} como alvo do ${x[0]}.`,`${x[0]} prepara proposta milionária por ${S.nick}.`]))}}}
-home();
-</script>
+  <div class="announcement"><span class="pulse"></span> ACESSO ANTECIPADO <span class="announcement-sep">•</span> VERSÃO BETA 0.1.0</div>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Craque: Rumo ao Estrelato, início">
+      <span class="brand-mark">CR</span>
+      <span class="brand-name">CRAQUE<span>:</span><small>RUMO AO ESTRELATO</small></span>
+    </a>
+    <nav aria-label="Navegação principal">
+      <a href="#sobre">O jogo</a><a href="#atualizacoes">Atualizações</a><a href="#feedback">Feedback</a>
+    </nav>
+    <a class="header-cta" href="#jogar">Jogar beta <span>↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-grid"></div>
+      <div class="hero-content">
+        <div class="eyebrow"><span class="eyebrow-line"></span> SUA HISTÓRIA. SUAS ESCOLHAS.</div>
+        <h1>O próximo<br>craque pode<br>ser <em>você.</em></h1>
+        <p class="hero-copy">Comece do zero, conquiste seu espaço e transforme cada decisão em um passo rumo ao estrelato. Sua carreira no futebol começa aqui.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#jogar">⚽ Jogar agora <span>→</span></a>
+          <a class="button button-ghost" href="#sobre">Conhecer o jogo</a>
+        </div>
+        <div class="hero-meta"><span class="live-dot"></span> BETA EM DESENVOLVIMENTO <span class="meta-divider">|</span> JOGUE NO NAVEGADOR</div>
+      </div>
+      <div class="hero-art" aria-label="Ilustração abstrata de futebol">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="stadium-light light-a"></div><div class="stadium-light light-b"></div>
+        <div class="big-number">10</div>
+        <div class="football">⚽</div>
+        <div class="art-caption"><span>01 / 10</span><strong>O CAMINHO ATÉ O TOPO</strong></div>
+      </div>
+      <div class="hero-bottom"><span>FEITO PARA QUEM SONHA GRANDE</span><span>BRASIL · FUTEBOL · CARREIRA</span></div>
+    </section>
+
+    <section class="stats-strip" aria-label="Características do jogo">
+      <div><strong>01</strong><span>UMA CARREIRA<br>PARA CONSTRUIR</span></div>
+      <div><strong>∞</strong><span>ESCOLHAS<br>PELO CAMINHO</span></div>
+      <div><strong>β</strong><span>JOGO EM<br>EVOLUÇÃO</span></div>
+    </section>
+
+    <section class="section about" id="sobre">
+      <div class="section-kicker">01 — SOBRE O JOGO</div>
+      <div class="section-heading">
+        <h2>Não basta jogar.<br><em>É preciso chegar lá.</em></h2>
+        <p>Viva a trajetória de um jogador, das primeiras oportunidades até os maiores palcos. Cada escolha pode mudar o rumo da sua história.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card feature-main"><div class="feature-icon">↗</div><div class="feature-number">01</div><h3>Construa sua carreira</h3><p>Busque oportunidades, evolua e trabalhe para conquistar seu lugar entre os grandes.</p><span class="card-tag">MODO CARREIRA</span></article>
+        <article class="feature-card"><div class="feature-icon">◎</div><div class="feature-number">02</div><h3>Decisões em campo</h3><p>Escolha quando passar, chutar ou tentar uma jogada decisiva.</p><span class="card-tag">SUAS ESCOLHAS</span></article>
+        <article class="feature-card"><div class="feature-icon">⌁</div><div class="feature-number">03</div><h3>Viva o estrelato</h3><p>Reputação, redes sociais e o sonho de vestir a camisa da seleção.</p><span class="card-tag">ALÉM DO GRAMADO</span></article>
+      </div>
+      <p class="beta-note"><span>ⓘ</span> Este é um projeto em beta. Algumas funções podem estar incompletas, sofrer alterações ou ainda não estar disponíveis.</p>
+    </section>
+
+    <section class="play-section" id="jogar">
+      <div class="play-panel">
+        <div class="play-copy">
+          <div class="section-kicker">02 — HORA DE ENTRAR EM CAMPO</div>
+          <h2>Sua jornada<br>começa <em>agora.</em></h2>
+          <p>Entre no beta e experimente a versão atual. Seu feedback ajuda a transformar o projeto em um jogo cada vez melhor.</p>
+          <div class="play-details"><span><i></i> Navegador</span><span><i></i> Beta 0.1.0</span><span><i></i> Em desenvolvimento</span></div>
+          <button class="button button-primary play-button" id="launch-game">⚽ Iniciar jogo <span>→</span></button>
+          <small class="button-hint">O jogo abre nesta página. Não precisa instalar nada.</small>
+        </div>
+        <div class="game-window">
+          <div class="window-bar"><div class="window-dots"><i></i><i></i><i></i></div><span>CRAQUE.EXE / BETA</span><span class="window-status">● ONLINE</span></div>
+          <div class="game-preview">
+            <div class="pitch-lines"></div>
+            <div class="preview-badge">PRÉVIA DO PROJETO</div>
+            <div class="preview-ball">⚽</div>
+            <div class="preview-title">O JOGO<br><em>COMEÇA AQUI</em></div>
+            <p>Entre em campo, futuro craque.</p>
+            <div class="preview-bottom"><span>CARREIRA</span><span>·</span><span>DECISÕES</span><span>·</span><span>GLÓRIA</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section updates" id="atualizacoes">
+      <div class="section-kicker">03 — DIÁRIO DE DESENVOLVIMENTO</div>
+      <div class="updates-heading"><h2>O projeto está <em>evoluindo.</em></h2><span class="version-pill">BETA 0.1.0</span></div>
+      <div class="update-list">
+        <article class="update-item"><div class="update-date">VERSÃO 0.1.0 <span>ATUAL</span></div><div><h3>Primeira apresentação do projeto</h3><p>Site oficial inicial, identificação do beta e canal para enviar sugestões e relatar problemas.</p></div><div class="update-state">● Publicado</div></article>
+        <article class="update-item"><div class="update-date">PRÓXIMAS VERSÕES</div><div><h3>Mais novidades a caminho</h3><p>Novas mecânicas, melhorias e recursos serão anunciados conforme forem implementados.</p></div><div class="update-state planned">◷ Planejado</div></article>
+      </div>
+      <p class="updates-footnote">As notas acima descrevem o site e o plano de desenvolvimento; atualize-as conforme as funções reais do jogo forem lançadas.</p>
+    </section>
+
+    <section class="feedback-section" id="feedback">
+      <div class="feedback-intro"><div class="section-kicker">04 — VOCÊ FAZ PARTE DISSO</div><h2>Encontrou um bug?<br><em>Conta pra gente.</em></h2><p>O beta é feito para testar, aprender e melhorar. Mande sua opinião, ideia ou problema encontrado.</p><div class="feedback-decoration">SEU FEEDBACK<br><strong>MUDA O JOGO.</strong></div></div>
+      <form class="feedback-form" id="feedback-form">
+        <label for="player-name">Seu nome <span>(opcional)</span></label><input id="player-name" name="name" type="text" maxlength="80" placeholder="Como podemos te chamar?">
+        <label for="feedback-type">Tipo de feedback</label><select id="feedback-type" name="type" required><option value="Sugestão">💡 Sugestão</option><option value="Bug">🐛 Reportar um bug</option><option value="Opinião">💬 Opinião geral</option><option value="Outro">✦ Outro</option></select>
+        <label for="feedback-message">Sua mensagem</label><textarea id="feedback-message" name="message" rows="5" maxlength="2000" required placeholder="Conte o que aconteceu ou o que você gostaria de ver no jogo..."></textarea>
+        <button class="button button-primary submit-button" type="submit">Enviar feedback <span>→</span></button>
+        <p class="form-note">Este formulário prepara uma mensagem para você copiar. Para receber feedbacks automaticamente, conecte-o a um serviço de formulários ou a um servidor.</p>
+        <div class="form-result" id="form-result" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="brand footer-brand" href="#"><span class="brand-mark">CR</span><span class="brand-name">CRAQUE<span>:</span><small>RUMO AO ESTRELATO</small></span></a><p>Um sonho. Uma carreira. Um craque.</p><span class="footer-beta">BETA 0.1.0 · FEITO EM DESENVOLVIMENTO</span><span class="copyright">© <span id="year"></span> Craque: Rumo ao Estrelato</span></footer>
+
+  <dialog id="game-dialog" class="game-dialog">
+    <div class="dialog-top"><div><span class="section-kicker">CRAQUE: RUMO AO ESTRELATO</span><h2>Área de jogo <em>beta</em></h2></div><button id="close-game" class="close-button" aria-label="Fechar jogo">✕</button></div>
+    <div id="game-mount" class="game-mount">
+      <div class="empty-game"><div class="empty-ball">⚽</div><h3>Seu jogo entra em campo aqui.</h3><p>O site está pronto para receber o jogo, mas ainda precisamos adicionar os arquivos ou o código jogável que você criou.</p><div class="empty-steps"><span>01</span> Coloque os arquivos do jogo na pasta <code>game/</code><span>02</span> Edite <code>game/index.html</code> e conecte o jogo</div><a href="#feedback" class="button button-primary" id="empty-feedback">Enviar sugestão <span>→</span></a></div>
+    </div>
+    <div class="dialog-footer"><span><i></i> VERSÃO BETA 0.1.0</span><span>Progresso pode ser perdido durante testes.</span></div>
+  </dialog>
+  <script src="script.js"></script>
 </body>
 </html>
